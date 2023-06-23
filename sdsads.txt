@@ -1,0 +1,132 @@
+local plr = game.Players.LocalPlayer
+local library = loadstring(game:HttpGet('https://pastebin.com/raw/vPWzQEC8'))()
+local window_player = library.window("IGNORE")
+
+local window_admin = library.window("admin watch")
+
+function touch(toucher,touched)
+    firetouchinterest(toucher,touched,0)
+    wait()
+    firetouchinterest(toucher,touched,1)
+end
+
+local admins = {
+	67274501,
+    1571749405,
+    1418570886,
+    1377639986,
+    87868633,
+    1739231594,
+    48597068,
+    545097293,
+    408245076,
+	1697693722,
+	179984834,
+	475785649,
+	91207094,
+	1348559580,
+	62154253,
+	1284124240,
+	181346001,
+	74645535,
+	87868633,
+	354412476,
+	1765746501,
+	4234173593,
+	233321522,
+	72941418,
+	1647671483,
+	1377639986,
+	54101207,
+	434249228,
+	190213294,
+	67274501,
+	360103156,
+	1290389079,
+	58102925,
+	48632787,
+	1571749405,
+	336602369,
+	197751061,
+	107306905,
+	179014857,
+	2565826354,
+}
+
+local cam = workspace.CurrentCamera
+
+local alertadmin = true
+window_admin.toggle("alert (has list of user ids, new admins wont alert)",alertadmin,function(bool)
+    alertadmin = bool 
+end)
+
+local admintext = window_admin.label("admins: NOBODY!!!")
+
+local adminsinserver = {}
+function isadmin(who)
+    if table.find(admins,who.UserId) then
+        table.insert(adminsinserver,who.Name)
+        
+        if alertadmin then
+            local ss = Instance.new("Sound",game.CoreGui)
+            game:GetService("Debris"):AddItem(ss,5)
+            ss.SoundId = "rbxassetid://9062380528"
+            ss.Volume = 0.4
+            ss:Play()
+        end
+        
+        spawn(function()
+            repeat wait() until not who:IsDescendantOf(game.Players)
+            table.remove(adminsinserver,table.find(adminsinserver,who.Name))
+        end)
+    end 
+end
+
+spawn(function()
+    for i,who in pairs(game.Players:GetPlayers()) do
+        isadmin(who) 
+    end
+end)
+
+game.Players.PlayerAdded:Connect(function(who)
+    isadmin(who)
+end)
+
+local selectedplayer = nil
+local label_player
+window_player.textbox("player name",function(txt)
+    for i,v in pairs(game.Players:GetPlayers()) do
+        local us = v.Name:lower():sub(1,txt:len()) == txt:lower():sub(1,txt:len())
+        local ds = v.DisplayName:lower():sub(1,txt:len()) == txt:lower():sub(1,txt:len())
+        
+        if us or ds then
+            selectedplayer = v 
+            label_player.changetext("@"..v.Name)
+        end
+    end
+end)
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    local hum = plr.Character.Humanoid
+    if loopwalkspeed and loopwalkspeed > 0 and hum.WalkSpeed < loopwalkspeed then
+        hum.WalkSpeed = loopwalkspeed
+
+    end
+    admintext.changetext("admins: ".. table.concat(adminsinserver," "))
+    
+    for i,v in pairs(workspace:GetChildren()) do
+        if enable_noclouds then
+            if v.Name:find("plaugecloud") or v.Name:find("smogcloud") then
+                v:Destroy()
+            end 
+        end
+        
+        if v.Name == "moneybag" or v.Name == "pound" or v.Name == "shilling" or v.Name == "penny" or v.Name == "farthing" then
+            if enable_grabmoney and hum.Health > 0 then
+                repeat wait()
+                    touch(plr.Character.PrimaryPart,v)
+                until not v:IsDescendantOf(workspace)  
+            end
+        end  
+    end
+end)
